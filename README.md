@@ -1,5 +1,7 @@
 # CAP4104 Project 1 - Automating Usability Testing
 
+[![YouTube Demo](https://img.shields.io/badge/YouTube-Video-red?logo=youtube)](https://youtu.be/zvPcIIX3Y7E)
+
 This repository contains a Streamlit app for automating usability testing, developed for the HCI course (CAP4104).
 
 ## Features
