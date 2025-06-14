@@ -4,6 +4,8 @@ import os
 import csv
 from datetime import datetime
 
+st.set_page_config(page_title="Usability Testing Automation Tool", layout="centered")
+
 # Ensure data directory exists
 data_dir = 'data'
 os.makedirs(data_dir, exist_ok=True)
@@ -23,8 +25,44 @@ def append_csv(file, fieldnames, row):
             writer.writeheader()
         writer.writerow(row)
 
+# Add custom CSS for a professional look
+st.markdown('''
+    <style>
+    body, .stApp { font-family: "Segoe UI", "Roboto", "Arial", sans-serif; background: #181c24; color: #f5f6fa; }
+    .main { background: #181c24; }
+    .stButton>button {
+        font-size: 1.1rem;
+        padding: 0.5em 1.5em;
+        border-radius: 8px;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        margin: 0.2em 0.5em 0.2em 0;
+        transition: background 0.2s;
+    }
+    .stButton>button:hover {
+        background: #2563eb;
+    }
+    .task-card {
+        background: #23293a;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        padding: 2em 2em 1.5em 2em;
+        margin-bottom: 2em;
+        border: 1px solid #2d3340;
+    }
+    .task-title { font-size: 1.3rem; font-weight: 600; color: #60a5fa; margin-bottom: 0.2em; }
+    .task-instructions { font-size: 1.05rem; color: #cbd5e1; margin-bottom: 1em; }
+    .stSlider>div { color: #60a5fa; }
+    .stTextArea textarea { background: #1e2230; color: #f5f6fa; border-radius: 8px; }
+    .stRadio>div { color: #60a5fa; }
+    .stForm label { color: #60a5fa; }
+    .stDataFrame { background: #23293a; border-radius: 10px; }
+    .stAlert { border-radius: 8px; }
+    </style>
+''', unsafe_allow_html=True)
+
 # --- Streamlit App ---
-st.set_page_config(page_title="Usability Testing Automation Tool", layout="centered")
 st.title("Usability Testing Automation Tool")
 
 # Tabs
@@ -49,8 +87,7 @@ if tab == "Consent":
     st.header("Consent Form")
     consent_text = st.text_area(
         "Consent Information (customizable)",
-        value="""
-        Thank you for participating in this usability test. Your responses will be recorded and used for research purposes only. Participation is voluntary, and you may withdraw at any time. No personally identifying information will be shared. By checking the box below, you provide your digital consent to participate.
+        value="""Thank you for participating in this usability test. Your responses will be recorded and used for research purposes only. Participation is voluntary, and you may withdraw at any time. No personally identifying information will be shared. By checking the box below, you provide your digital consent to participate.
         """,
         height=150
     )
@@ -93,54 +130,91 @@ if tab == "Demographics":
 
 # --- Task Tab ---
 if tab == "Task":
-    st.header("Task 1: Example Task")
-    st.write("Please complete the following task:")
-    st.info("Task: Example Task. (Replace with your real task description.)")
+    st.header("Usability Tasks")
+    st.markdown("<div style='font-size:1.1rem; color:#cbd5e1; margin-bottom:2em;'>Please complete each task below by following the instructions. Each task will be timed and your feedback will be recorded. The Health Tracker App will open in a new tab.</div>", unsafe_allow_html=True)
 
-    if 'task_started' not in st.session_state:
-        st.session_state['task_started'] = False
-    if 'task_start_time' not in st.session_state:
-        st.session_state['task_start_time'] = None
-    if 'task_duration' not in st.session_state:
-        st.session_state['task_duration'] = None
+    TASKS = [
+        {
+            'number': 1,
+            'title': 'Log your daily health data',
+            'instructions': "Go to the Health Tracker App and enter today's calories intake and exercise minutes.",
+        },
+        {
+            'number': 2,
+            'title': 'Check the weather',
+            'instructions': "In the Health App, search for the weather forecast in any city.",
+        },
+        {
+            'number': 3,
+            'title': 'Review your health progress',
+            'instructions': "Use the app to review your entered health data and interpret your progress.",
+        },
+    ]
+    app_url = "https://juliovivas99-cap4104-project-2-app-zdwchh.streamlit.app"
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if not st.session_state['task_started']:
-            if st.button("Start Task"):
-                st.session_state['task_started'] = True
-                st.session_state['task_start_time'] = datetime.now()
-                st.session_state['task_duration'] = None
-        else:
-            st.write(f"Task started at: {st.session_state['task_start_time'].strftime('%H:%M:%S')}")
-    with col2:
-        if st.session_state['task_started']:
-            if st.button("Stop Task"):
-                end_time = datetime.now()
-                duration = (end_time - st.session_state['task_start_time']).total_seconds()
-                st.session_state['task_duration'] = duration
-                st.session_state['task_started'] = False
-                st.success(f"Task completed in {duration:.2f} seconds.")
+    if 'task_states' not in st.session_state:
+        st.session_state['task_states'] = [{} for _ in TASKS]
 
-    if st.session_state['task_duration'] is not None:
-        st.write(f"**Task Duration:** {st.session_state['task_duration']:.2f} seconds")
+    for idx, task in enumerate(TASKS):
+        with st.container():
+            st.markdown(f"<div class='task-card'>", unsafe_allow_html=True)
+            st.markdown(f"<div class='task-title'>Task {task['number']}: {task['title']}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='task-instructions'>{task['instructions']}</div>", unsafe_allow_html=True)
+            st.markdown(f"<a href='{app_url}' target='_blank' style='color:#38bdf8; font-weight:500;'>Open Health Tracker App in new tab</a>", unsafe_allow_html=True)
 
-    success = st.radio("Task Outcome", ["Success", "Failure"])
-    notes = st.text_area("Observer Notes (optional)")
-    if st.button("Submit Task Data"):
-        if st.session_state['task_duration'] is None:
-            st.warning("Please start and stop the timer before submitting.")
-        else:
-            row = {
-                'timestamp': datetime.now().isoformat(),
-                'duration_seconds': st.session_state['task_duration'],
-                'success': success,
-                'notes': notes
-            }
-            append_csv(task_csv, ['timestamp', 'duration_seconds', 'success', 'notes'], row)
-            st.success("Task data recorded.")
-            st.session_state['task_duration'] = None
-            st.session_state['task_start_time'] = None
+            state = st.session_state['task_states'][idx]
+            if 'started' not in state:
+                state['started'] = False
+            if 'start_time' not in state:
+                state['start_time'] = None
+            if 'duration' not in state:
+                state['duration'] = None
+            if 'finished' not in state:
+                state['finished'] = False
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if not state['started'] and not state['finished']:
+                    if st.button(f"Start Task {task['number']}", key=f"start_{idx}"):
+                        state['started'] = True
+                        state['start_time'] = datetime.now()
+                        state['duration'] = None
+                elif state['started'] and not state['finished']:
+                    st.write(f"Started at: {state['start_time'].strftime('%H:%M:%S')}")
+            with col2:
+                if state['started'] and not state['finished']:
+                    if st.button(f"Finish Task {task['number']}", key=f"finish_{idx}"):
+                        end_time = datetime.now()
+                        duration = (end_time - state['start_time']).total_seconds()
+                        state['duration'] = duration
+                        state['started'] = False
+                        state['finished'] = True
+                        st.success(f"Task completed in {duration:.2f} seconds.")
+
+            if state['duration'] is not None:
+                st.write(f"**Time taken:** {state['duration']:.2f} seconds")
+
+            if state['finished']:
+                with st.form(f"feedback_form_{idx}"):
+                    success = st.checkbox("Was the task completed successfully?", key=f"success_{idx}")
+                    difficulty = st.slider("How difficult was the task? (1=Easy, 5=Hard)", 1, 5, 3, key=f"difficulty_{idx}")
+                    feedback = st.text_area("Optional feedback", key=f"feedback_{idx}")
+                    submitted = st.form_submit_button("Submit Task Data", disabled=state.get('submitted', False))
+                    if submitted and not state.get('submitted', False):
+                        row = {
+                            'timestamp': datetime.now().isoformat(),
+                            'task_number': task['number'],
+                            'task_title': task['title'],
+                            'success': 'Yes' if success else 'No',
+                            'difficulty': difficulty,
+                            'feedback': feedback,
+                            'duration_seconds': state['duration']
+                        }
+                        append_csv(task_csv, ['timestamp', 'task_number', 'task_title', 'success', 'difficulty', 'feedback', 'duration_seconds'], row)
+                        st.success("Task data recorded.")
+                        state['submitted'] = True
+            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("<br>", unsafe_allow_html=True)
 
 # --- Exit Questionnaire Tab ---
 if tab == "Exit Questionnaire":
